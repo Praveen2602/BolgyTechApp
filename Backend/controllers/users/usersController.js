@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs")
+
 //@desc register new user 
 //@route POST /api/v1/users/register
 //@access public
@@ -12,6 +14,11 @@ exports.register = async (req,res)=>{
       }
       //!object or document that is going to store
       const newUser = new User({username,email,password});
+      
+      //!hashing password using bcrypt
+      const salt = await bcrypt.genSalt(10);
+      newUser.password = await bcrypt.hash(password,salt);
+       
       await newUser.save();
       res.json({
         status:"success",
