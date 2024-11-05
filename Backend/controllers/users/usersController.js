@@ -32,4 +32,25 @@ exports.register = async (req,res)=>{
     catch(error){
      res.json({status:"Failed", message:error?.message});
     }
-}
+};
+//@desc login new user 
+//@route POST /api/v1/users/login
+//@access public
+ exports.login = async (req,res)=>{
+  try{
+   const {username,password} = req.body;
+   const user  = await User.findOne({username});
+   if(!user){
+    throw new Error("Invalid credentialds");
+   } 
+   const isMatched =  bcrypt.compare(password,user?.password);
+   if(!isMatched){
+    throw new Error("Invalid credentialds");
+   }
+   user.lastlogin = new Date();
+   await user.save();
+   res.json({status:"success" ,user});
+  }catch(error){
+    res.json({status:"failed" ,message:error?.message});
+  }
+ }
