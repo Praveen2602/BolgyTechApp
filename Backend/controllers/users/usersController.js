@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs")
 const User = require("../../models/Users/Users")
 const generateToken = require("../../utils/generateToken")
 
+
 exports.register = async (req,res)=>{
     try{
       const {username, email , password } = req.body;
@@ -68,11 +69,13 @@ exports.register = async (req,res)=>{
 //@route POST /api/v1/users/profile
 //@access private
 exports.getProfile= async (req,res)=>{
+  // console.log("Rec",req.userAuth)
   try{
+    const user = await User.findById(req.userAuth._id);
     res.json({
       status:"success",
       message:"profile fetched",
-      data:"dummy user",
+      user,
     })
   }catch(error){
     res.json({

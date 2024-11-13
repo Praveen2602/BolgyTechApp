@@ -5,7 +5,7 @@ const generateToken = (user)=>{
             id:user._id,
         }
     };
-    const token = jwt.sign(payLoad,'secretkey',{expiresIn:3600});
+    const token = jwt.sign(payLoad,"secretkey",{expiresIn:3600});
     return token; 
 }
 module.exports = generateToken;

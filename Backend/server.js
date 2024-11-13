@@ -12,7 +12,7 @@ connectDB();
 //!set up middleware for route 
 app.use(express.json());
 //? setting router
-app.use('/',userRouter);
+app.use('/api/v1/users',userRouter);
 const PORT = process.env.PORT || 9080;
 
 app.listen(PORT,()=>{
