@@ -7,7 +7,7 @@ const User = require("../../models/Users/Users")
 const generateToken = require("../../utils/generateToken")
 
 
-exports.register = async (req,res)=>{
+exports.register = async (req,res,next)=>{
     try{
       const {username, email , password } = req.body;
       const user = await User.findOne({username});
@@ -32,55 +32,56 @@ exports.register = async (req,res)=>{
       })
     }
     catch(error){
-     res.json({status:"Failed", message:error?.message});
+     next(error) //Goto Global error handler
     }
 };
 //@desc login new user 
 //@route POST /api/v1/users/login
 //@access public
- exports.login = async (req,res)=>{
-  try{
-   const {username,password} = req.body;
-   const user  = await User.findOne({username});
-   if(!user){
-    throw new Error("Invalid credentialds");
-   } 
-   const isMatched =  bcrypt.compare(password,user?.password);
-   if(!isMatched){
-    throw new Error("Invalid credentialds");
-   }
-   user.lastlogin = new Date();
-   await user.save();
-   res.json(
-    {
-      status:"success",
-      email:user?.email,
-      _id:user?._id,
-      username:user?.username,
-      role:user?.role,
-      token:generateToken(user),
+exports.login = async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+
+    // Await the bcrypt.compare function to resolve the promise
+    const isMatched = await bcrypt.compare(password, user.password);
+    if (!isMatched) {
+      throw new Error("Invalid credentials");
+    }
+
+    user.lastlogin = new Date();
+    await user.save();
+
+    res.json({
+      status: "success",
+      email: user.email,
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+      token: generateToken(user),
     });
-  }catch(error){
-    res.json({status:"failed" ,message:error?.message});
+  } catch (error) {
+    next(error);
   }
- }
+};
+
 
  //@desc PRofile view of user 
 //@route POST /api/v1/users/profile
 //@access private
-exports.getProfile= async (req,res)=>{
+exports.getProfile= async (req,res,next)=>{
   // console.log("Rec",req.userAuth)
   try{
-    const user = await User.findById(req.userAuth._id);
+    const user = await User.findById(req.userAuth.id);
     res.json({
       status:"success",
       message:"profile fetched",
       user,
     })
   }catch(error){
-    res.json({
-      status:"error",
-      message:error?.message
-    })
+    next(error);
   }
 }

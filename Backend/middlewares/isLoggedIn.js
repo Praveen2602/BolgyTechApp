@@ -19,6 +19,7 @@ const isLoggedIn = (req, res, next) => {
     // Continue with token verification logic here
     // For example: 
     jwt.verify(token, "secretkey", async (err, decoded) => {
+        
         if(err){
             return res.status(401).json({
                 status:"Failed",
@@ -28,7 +29,7 @@ const isLoggedIn = (req, res, next) => {
            const userId =decoded?.user?.id;
            const user = await User.findById(userId).select("username email role _id");
            req.userAuth = user;
-           next()
+           next();
         }
     });
 
