@@ -5,42 +5,36 @@ const bcrypt = require("bcryptjs")
 //@access public
 const User = require("../../models/Users/Users")
 const generateToken = require("../../utils/generateToken")
+const asyncHandler = require("express-async-handler");
 
-
-exports.register = async (req,res,next)=>{
-    try{
-      const {username, email , password } = req.body;
-      const user = await User.findOne({username});
-      if(user){
-        throw  new Error("User already existed");
-      }
-      //!object or document that is going to store
-      const newUser = new User({username,email,password});
-      
-      //!hashing password using bcrypt
-      const salt = await bcrypt.genSalt(10);
-      newUser.password = await bcrypt.hash(password,salt);
-       
-      await newUser.save();
-      res.json({
-        status:"success",
-        message:"User  registered successfully",
-        _id:newUser?.id,
-        username:newUser?.username,
-        email:newUser?.email,
-        role:newUser?.role
-      })
+exports.register = asyncHandler( async (req,res,next)=>{
+    const {username, email , password } = req.body;
+    const user = await User.findOne({username});
+    if(user){
+      throw  new Error("User already existed");
     }
-    catch(error){
-     next(error) //Goto Global error handler
-    }
-};
+    //!object or document that is going to store
+    const newUser = new User({username,email,password});
+    
+    //!hashing password using bcrypt
+    const salt = await bcrypt.genSalt(10);
+    newUser.password = await bcrypt.hash(password,salt);
+     
+    await newUser.save();
+    res.json({
+      status:"success",
+      message:"User  registered successfully",
+      _id:newUser?.id,
+      username:newUser?.username,
+      email:newUser?.email,
+      role:newUser?.role
+    })
+});
 //@desc login new user 
 //@route POST /api/v1/users/login
 //@access public
-exports.login = async (req, res, next) => {
-  try {
-    const { username, password } = req.body;
+exports.login = asyncHandler(async (req, res, next) => {
+   const { username, password } = req.body;
     const user = await User.findOne({ username });
     if (!user) {
       throw new Error("Invalid credentials");
@@ -63,25 +57,20 @@ exports.login = async (req, res, next) => {
       role: user.role,
       token: generateToken(user),
     });
-  } catch (error) {
-    next(error);
-  }
-};
+  
+});
 
 
  //@desc PRofile view of user 
 //@route POST /api/v1/users/profile
 //@access private
-exports.getProfile= async (req,res,next)=>{
+exports.getProfile= asyncHandler(async (req,res,next)=>{
   // console.log("Rec",req.userAuth)
-  try{
     const user = await User.findById(req.userAuth.id);
     res.json({
       status:"success",
       message:"profile fetched",
       user,
     })
-  }catch(error){
-    next(error);
-  }
-}
+  
+});
